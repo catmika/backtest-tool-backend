@@ -1,0 +1,109 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "author": "catmika",
+  "license": "ISC",
+  "scripts": {
+    "start": "ts-node ./src/index.ts",
+    "dev": "nodemon ./src/index.ts",
+    "dev-watch": "nodemon --inspect ./dist/index.js",
+    "tsc": "tsc",
+    "tsc-watch": "tsc --watch",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write src/**/*.ts --config .prettierrc",
+    "build": "tsc && node ./build-uglify.js"
+  },
+  "lint-staged": {
+    "src//*.{json}": [
+      "prettier --write"
+    ],
+    "src//*.{js,ts}": [
+      "prettier --write",
+      "eslint --ext .js --ext .ts"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "eslintConfig": {
+    "rules": {
+      "import/order": [
+        "warn",
+        {
+          "groups": [
+            "builtin",
+            "external",
+            "internal"
+          ],
+          "pathGroups": [
+            {
+              "pattern": "middleware/",
+              "group": "internal"
+            },
+            {
+              "pattern": "models/",
+              "group": "internal"
+            },
+            {
+              "pattern": "routes/",
+              "group": "internal"
+            },
+            {
+              "pattern": "util/",
+              "group": "internal"
+            }
+          ],
+          "newlines-between": "always",
+          "alphabetize": {
+            "order": "asc",
+            "caseInsensitive": true
+          }
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/body-parser": "^1.19.5",
+    "@types/eslint-config-prettier": "^6.11.3",
+    "@types/eslint-plugin-prettier": "^3.1.3",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.10.5",
+    "@types/nodemailer": "^6.4.14",
+    "@types/nodemailer-express-handlebars": "^4.0.5",
+    "@types/nodemon": "^1.19.6",
+    "@types/prettier": "^3.0.0",
+    "@types/uglify-js": "^3.17.4",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "nodemon": "^3.0.2",
+    "prettier": "^3.1.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
+    "uglify-js": "^3.17.4"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "migrate-mongo": "^11.0.0",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.0.3",
+    "nodemailer": "^6.9.7",
+    "nodemailer-express-handlebars": "^6.1.0"
+  }
+}
