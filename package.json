@@ -17,10 +17,10 @@
     "build": "tsc && node ./build-uglify.js"
   },
   "lint-staged": {
-    "src//*.{json}": [
+    "src//**/*.{json}": [
       "prettier --write"
     ],
-    "src//*.{js,ts}": [
+    "src//**/*.{js,ts}": [
       "prettier --write",
       "eslint --ext .js --ext .ts"
     ]
