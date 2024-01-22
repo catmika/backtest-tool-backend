@@ -1,25 +1,50 @@
-// import nodemailer from 'nodemailer';
+import nodemailer from 'nodemailer';
+import hbs from 'nodemailer-express-handlebars';
+import path from 'path';
 
-// const sendEmail = async (options) => {
-//   //1) Create a transporter
-//   const transporter = nodemailer.createTransport({
-//     host: process.env.EMAIL_HOST,
-//     port: process.env.EMAIL_PORT,
-//     auth: {
-//       user: process.env.EMAIL_USERNAME,
-//       pass: process.env.EMAIL_PASSWORD,
-//     },
-//   });
-//   //2) Define the email options
-//   const mailOptions = {
-//     from: 'Maksym Andriiash <maxand2000@gmail.com>',
-//     to: options.email,
-//     subject: options.subject,
-//     text: options.message,
-//     //html:
-//   };
-//   //3) Actually send the email
-//   await transporter.sendMail(mailOptions);
-// };
+interface IEmailOptions {
+  email: string;
+  subject: string;
+  link: string;
+  template: 'email-confirmation' | 'password-reset';
+}
 
-// module.exports = sendEmail;
+const transporter = nodemailer.createTransport({
+  service: process.env.EMAIL_SERVICE,
+  host: process.env.EMAIL_HOST,
+  port: +process.env.EMAIL_PORT,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
+const viewsPath = path.join(__dirname, '../views');
+
+transporter.use(
+  'compile',
+  hbs({
+    viewEngine: {
+      extname: '.hbs',
+      partialsDir: viewsPath,
+      layoutsDir: viewsPath,
+      defaultLayout: false,
+    },
+    viewPath: viewsPath,
+    extName: '.hbs',
+  }),
+);
+
+export const sendEmail = async (options: IEmailOptions) => {
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: options.email,
+    subject: options.subject,
+    template: options.template,
+    context: {
+      link: options.link,
+    },
+  };
+  await transporter.sendMail(mailOptions);
+};
