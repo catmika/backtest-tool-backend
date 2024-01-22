@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
-import { STATUS_CODES, RESPONSE_MESSAGES } from '../util/constants';
+import { STATUS_CODES } from '../util/constants';
 import { ErrorHandler } from '../util/errorHandler';
 import User from '../models/User.model';
 
@@ -30,14 +30,14 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
     ) as JwtPayload;
     if (!decoded) {
       throw new ErrorHandler(
-        RESPONSE_MESSAGES.UNAUTHORIZED,
+        'Invalid or expired access token',
         STATUS_CODES.UNAUTHORIZED,
       );
     }
 
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
-      throw new ErrorHandler('User does not exist', STATUS_CODES.UNAUTHORIZED);
+      throw new ErrorHandler('User does not exist', STATUS_CODES.NOT_FOUND);
     }
 
     if (currentUser.changedPasswordAfter(decoded.iat)) {
@@ -46,7 +46,10 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
         STATUS_CODES.UNAUTHORIZED,
       );
     }
-  } catch (err) {
-    next(err);
+    next();
+  } catch (error) {
+    next(error);
   }
 };
+
+export default auth;

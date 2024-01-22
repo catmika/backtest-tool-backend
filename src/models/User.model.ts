@@ -5,6 +5,10 @@ import { Query } from 'mongoose';
 export interface IUser {
   email: string;
   password: string;
+  confirmationToken: string;
+  resetToken: string;
+  isConfirmed: boolean;
+  isGoogle: boolean;
   isDeleted: boolean;
   passwordChangedAt: Date;
 }
@@ -24,6 +28,20 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       select: false,
+    },
+    confirmationToken: {
+      type: String,
+      required: true,
+    },
+    resetToken: String,
+    isConfirmed: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    isGoogle: {
+      type: Boolean,
+      default: false,
     },
     isDeleted: {
       type: Boolean,
