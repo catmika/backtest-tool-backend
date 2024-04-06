@@ -91,11 +91,14 @@ const signin = async (email: string, password: string) => {
     );
   }
 
-  let isAuthorized = true;
-
-  if (!user.isGoogle) {
-    isAuthorized = await bcrypt.compare(password, user.password);
+  if (user.isGoogle) {
+    throw new ErrorHandler(
+      'This email is used with google authentication',
+      STATUS_CODES.UNAUTHORIZED,
+    );
   }
+
+  const isAuthorized = await bcrypt.compare(password, user.password);
 
   if (!isAuthorized) {
     throw new ErrorHandler(

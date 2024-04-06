@@ -7,6 +7,14 @@ import {
 } from '../../util/cookieOptions';
 import { RESPONSE_MESSAGES } from '../../util/constants';
 
+const getUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.send((req as any).user);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const signup = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
@@ -65,9 +73,21 @@ const signinGoogle = async (
   }
 };
 
+const logout = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.send({ message: RESPONSE_MESSAGES.SUCCESS });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const refresh = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken } = req.cookies;
+
+    console.log(refreshToken);
 
     const { accessToken } = await service.refresh(refreshToken);
 
@@ -105,17 +125,19 @@ const resetPassword = async (
 
     await service.resetPassword(token, newPassword);
 
-    res.redirect(`${process.env.FRONT_END_BASE_URL}/signin`);
+    res.redirect(`${process.env.FRONT_END_BASE_URL}/login`);
   } catch (error) {
     next(error);
   }
 };
 
 export default {
+  getUser,
   signup,
   confirm,
   signin,
   signinGoogle,
+  logout,
   refresh,
   forgotPassword,
   resetPassword,
