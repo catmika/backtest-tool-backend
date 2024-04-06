@@ -7,22 +7,13 @@ import User from '../models/User.model';
 
 const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const authHeaderValue = req.headers.authorization;
-    if (!authHeaderValue) {
+    const accessToken = req.cookies.accessToken;
+    if (!accessToken) {
       throw new ErrorHandler(
-        'There was no "Authorization" header provided in the request.',
+        'There was no access token provided in the request.',
         STATUS_CODES.UNAUTHORIZED,
       );
     }
-    const accessTokenMatch = authHeaderValue.match(/Bearer\s(.*)/);
-    if (!accessTokenMatch || accessTokenMatch.length < 2) {
-      throw new ErrorHandler(
-        'There was no access token provided in the "Authorization" header.',
-        STATUS_CODES.UNAUTHORIZED,
-      );
-    }
-
-    const accessToken = accessTokenMatch[1];
 
     const decoded = jwt.verify(
       accessToken,
@@ -46,6 +37,8 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
         STATUS_CODES.UNAUTHORIZED,
       );
     }
+
+    (req as any).user = { name: currentUser.name, email: currentUser.email };
     next();
   } catch (error) {
     next(error);

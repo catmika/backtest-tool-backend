@@ -7,7 +7,7 @@ export const cookieOptionsAccessToken: CookieOptions = {
       +calcExpiration(process.env.JWT_EXPIRES_IN).split('m')[0] * 60 * 1000,
   ),
   httpOnly: true,
-  sameSite: 'lax',
+  sameSite: 'strict',
   secure: process.env.NODE_ENV === 'production',
 };
 
@@ -19,6 +19,6 @@ export const cookieOptionsRefreshToken: CookieOptions = {
         1000,
   ),
   httpOnly: true,
-  sameSite: 'lax',
+  sameSite: 'strict',
   secure: process.env.NODE_ENV === 'production',
 };

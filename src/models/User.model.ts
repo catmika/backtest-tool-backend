@@ -4,6 +4,7 @@ import { Query } from 'mongoose';
 
 export interface IUser {
   email: string;
+  name: string;
   password: string;
   confirmationToken: string;
   resetToken: string;
@@ -23,6 +24,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       unique: true,
+    },
+    name: {
+      type: String,
+      default: 'mr. Noname',
     },
     password: {
       type: String,

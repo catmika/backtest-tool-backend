@@ -8,6 +8,6 @@
     "moduleResolution": "node",
     "allowJs": true
   },
-  "include": ["src/**/*.*"],
+  "include": ["src/**/*.*", "../backtest-tool-frontend/src/utils/userToken.ts"],
   "exclude": ["node_modules"]
 }

@@ -1,5 +1,6 @@
 import path from 'path';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import express, { Application, Request, Response, NextFunction } from 'express';
 
 import connectWithRetry from './util/mongooseInit';
@@ -9,6 +10,8 @@ import { allowList } from './util/corsOption';
 import { handleError } from './util/errorHandler';
 
 const app: Application = express();
+
+app.use(cookieParser());
 
 app.use(bodyParser.json({ limit: '16mb' }));
 
