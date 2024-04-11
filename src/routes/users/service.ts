@@ -122,6 +122,8 @@ const signin = async (email: string, password: string) => {
   return {
     accessToken,
     refreshToken,
+    name: user.name,
+    email: user.email,
   };
 };
 
@@ -174,10 +176,16 @@ const signinGoogle = async (token: string) => {
   return {
     accessToken,
     refreshToken,
+    email: user.email,
+    name: user.name,
   };
 };
 
 const refresh = async (refreshToken: string) => {
+  if (!refreshToken) {
+    throw new ErrorHandler('No refresh token', STATUS_CODES.UNAUTHORIZED);
+  }
+
   const decoded = jwt.verify(
     refreshToken,
     process.env.JWT_SECRET,

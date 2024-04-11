@@ -33,7 +33,9 @@ const confirm = async (req: Request, res: Response, next: NextFunction) => {
 
     await service.confirm(token);
 
-    res.redirect(`${process.env.FRONT_END_BASE_URL}/signin`);
+    res.redirect(
+      `${process.env.FRONT_END_BASE_URL}/signin?emailConfirmed=true`,
+    );
   } catch (error) {
     next(error);
   }
@@ -43,11 +45,14 @@ const signin = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
 
-    const { accessToken, refreshToken } = await service.signin(email, password);
+    const { accessToken, refreshToken, name } = await service.signin(
+      email,
+      password,
+    );
 
     res.cookie('accessToken', accessToken, cookieOptionsAccessToken);
     res.cookie('refreshToken', refreshToken, cookieOptionsRefreshToken);
-    res.send({ message: RESPONSE_MESSAGES.SUCCESS });
+    res.send({ email, name });
   } catch (error) {
     next(error);
   }
@@ -61,13 +66,12 @@ const signinGoogle = async (
   try {
     const { credential } = req.body;
 
-    const { accessToken, refreshToken } =
+    const { accessToken, refreshToken, email, name } =
       await service.signinGoogle(credential);
 
     res.cookie('accessToken', accessToken, cookieOptionsAccessToken);
     res.cookie('refreshToken', refreshToken, cookieOptionsRefreshToken);
-    // res.redirect(`${process.env.FRONT_END_BASE_URL}/about`);
-    res.send({ message: RESPONSE_MESSAGES.SUCCESS });
+    res.send({ email, name });
   } catch (error) {
     next(error);
   }
@@ -86,8 +90,6 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
 const refresh = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { refreshToken } = req.cookies;
-
-    console.log(refreshToken);
 
     const { accessToken } = await service.refresh(refreshToken);
 
@@ -125,7 +127,7 @@ const resetPassword = async (
 
     await service.resetPassword(token, newPassword);
 
-    res.redirect(`${process.env.FRONT_END_BASE_URL}/login`);
+    res.send({ message: RESPONSE_MESSAGES.SUCCESS });
   } catch (error) {
     next(error);
   }
