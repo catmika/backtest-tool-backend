@@ -1,7 +1,8 @@
 import path from 'path';
+import express, { Application, Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import express, { Application, Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 
 import connectWithRetry from './util/mongooseInit';
 import config from './util/config';
@@ -9,7 +10,18 @@ import router from './routes';
 import { allowList } from './util/corsOption';
 import { handleError } from './util/errorHandler';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const app: Application = express();
+
+!isProd &&
+  app.use(
+    rateLimit({
+      max: 100,
+      windowMs: 60 * 60 * 1000,
+      message: 'Too mant requests from this IP, please try again in an hour',
+    }),
+  );
 
 app.use(cookieParser());
 

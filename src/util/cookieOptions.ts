@@ -1,5 +1,8 @@
 import { CookieOptions } from 'express';
-import { calcExpiration } from '../routes/users/service';
+
+const calcExpiration = (min: string) => {
+  return (+min.split('m')[0] - new Date().getTimezoneOffset()).toString() + 'm';
+};
 
 export const cookieOptionsAccessToken: CookieOptions = {
   expires: new Date(
@@ -8,7 +11,7 @@ export const cookieOptionsAccessToken: CookieOptions = {
   ),
   httpOnly: true,
   sameSite: 'strict',
-  secure: process.env.NODE_ENV === 'production',
+  secure: true,
 };
 
 export const cookieOptionsRefreshToken: CookieOptions = {
@@ -20,5 +23,5 @@ export const cookieOptionsRefreshToken: CookieOptions = {
   ),
   httpOnly: true,
   sameSite: 'strict',
-  secure: process.env.NODE_ENV === 'production',
+  secure: true,
 };

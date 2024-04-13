@@ -9,11 +9,11 @@ const router = Router();
 
 router.get('/user', auth, handler.getUser);
 router.get('/confirm', handler.confirm);
-router.post('/logout', handler.logout);
 
 router.post('/signup', validation(schemas.user.signup), handler.signup);
 router.post('/signin', validation(schemas.user.signin), handler.signin);
 router.post('/signin-google', handler.signinGoogle);
+router.post('/logout', handler.logout);
 router.post('/refresh', handler.refresh);
 router.post(
   '/forgot-password',

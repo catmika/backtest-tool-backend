@@ -15,15 +15,18 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    const decoded = jwt.verify(
-      accessToken,
-      process.env.JWT_SECRET,
-    ) as JwtPayload;
-    if (!decoded) {
-      throw new ErrorHandler(
-        'Invalid or expired access token',
-        STATUS_CODES.UNAUTHORIZED,
-      );
+    let decoded: JwtPayload;
+
+    try {
+      decoded = jwt.verify(accessToken, process.env.JWT_SECRET) as JwtPayload;
+    } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new ErrorHandler(
+          'Invalid or expired access token',
+          STATUS_CODES.UNAUTHORIZED,
+        );
+      }
+      throw error;
     }
 
     const currentUser = await User.findById(decoded.id);
