@@ -1,45 +1,60 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { Document } from 'mongoose';
+import { Document, startSession } from 'mongoose';
 
 import { RESPONSE_MESSAGES, STATUS_CODES } from '../../util/constants';
 import User from '../../models/User.model';
 import { ErrorHandler } from '../../util/errorHandler';
 import { sendEmail } from '../../util/email';
 
-export const calcExpiration = (min: string) => {
-  return (+min.split('m')[0] - new Date().getTimezoneOffset()).toString() + 'm';
-};
-
 const signup = async (email: string, password: string) => {
-  const confirmationToken = jwt.sign(
-    { email },
-    process.env.JWT_SECRET_CONFIRMATION,
-    {
-      expiresIn: calcExpiration(process.env.JWT_CONFIRMATION_EXPIRES_IN),
-    },
-  );
+  const session = await startSession();
+  let confirmationToken: string;
 
-  const existingUser = await User.findOne({ email });
+  try {
+    session.startTransaction();
 
-  if (existingUser && existingUser.isConfirmed) {
-    throw new ErrorHandler(
-      'User with this email already exist',
-      STATUS_CODES.UNAUTHORIZED,
+    confirmationToken = jwt.sign(
+      { email },
+      process.env.JWT_SECRET_CONFIRMATION,
+      {
+        expiresIn: process.env.JWT_CONFIRMATION_EXPIRES_IN,
+      },
     );
-  }
 
-  if (existingUser && !existingUser.isConfirmed) {
-    existingUser.confirmationToken = confirmationToken;
-    await existingUser.save();
-  }
+    const existingUser = await User.findOne({ email }).session(session);
 
-  if (!existingUser) {
-    await User.create({
-      email,
-      password,
-      confirmationToken,
-    });
+    if (existingUser && existingUser.isConfirmed) {
+      throw new ErrorHandler(
+        'User with this email already exist',
+        STATUS_CODES.UNAUTHORIZED,
+      );
+    }
+
+    if (existingUser && !existingUser.isConfirmed) {
+      existingUser.confirmationToken = confirmationToken;
+      await existingUser.save({ session });
+    }
+
+    if (!existingUser) {
+      await User.create(
+        [
+          {
+            email,
+            password,
+            confirmationToken,
+          },
+        ],
+        { session },
+      );
+    }
+    await session.commitTransaction();
+  } catch (error) {
+    console.log('Error', error);
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
 
   const link = `${process.env.APP_BASE_URL}/confirm?token=${confirmationToken}`;
@@ -52,16 +67,21 @@ const signup = async (email: string, password: string) => {
 };
 
 const confirm = async (confirmationToken: string) => {
-  const decoded = jwt.verify(
-    confirmationToken,
-    process.env.JWT_SECRET_CONFIRMATION,
-  ) as JwtPayload;
+  let decoded: JwtPayload;
 
-  if (!decoded) {
-    throw new ErrorHandler(
-      'Invalid or expired confirmation token',
-      STATUS_CODES.UNAUTHORIZED,
-    );
+  try {
+    decoded = jwt.verify(
+      confirmationToken,
+      process.env.JWT_SECRET_CONFIRMATION,
+    ) as JwtPayload;
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new ErrorHandler(
+        'Invalid or expired confirmation token',
+        STATUS_CODES.UNAUTHORIZED,
+      );
+    }
+    throw error;
   }
 
   const user = await User.findOneAndUpdate(
@@ -108,14 +128,14 @@ const signin = async (email: string, password: string) => {
   }
 
   const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: calcExpiration(process.env.JWT_EXPIRES_IN),
+    expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
   const refreshToken = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET_REFRESH,
     {
-      expiresIn: calcExpiration(process.env.JWT_REFRESH_EXPIRES_IN),
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
     },
   );
 
@@ -161,7 +181,7 @@ const signinGoogle = async (token: string) => {
     { id: user ? user._id : newUser._id },
     process.env.JWT_SECRET,
     {
-      expiresIn: calcExpiration(process.env.JWT_EXPIRES_IN),
+      expiresIn: process.env.JWT_EXPIRES_IN,
     },
   );
 
@@ -169,7 +189,7 @@ const signinGoogle = async (token: string) => {
     { id: user ? user._id : newUser._id },
     process.env.JWT_SECRET_REFRESH,
     {
-      expiresIn: calcExpiration(process.env.JWT_REFRESH_EXPIRES_IN),
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
     },
   );
 
@@ -186,16 +206,21 @@ const refresh = async (refreshToken: string) => {
     throw new ErrorHandler('No refresh token', STATUS_CODES.UNAUTHORIZED);
   }
 
-  const decoded = jwt.verify(
-    refreshToken,
-    process.env.JWT_SECRET,
-  ) as JwtPayload;
+  let decoded: JwtPayload;
 
-  if (!decoded) {
-    throw new ErrorHandler(
-      'Invalid or expired refresh token',
-      STATUS_CODES.UNAUTHORIZED,
-    );
+  try {
+    decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_SECRET_REFRESH,
+    ) as JwtPayload;
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new ErrorHandler(
+        'Invalid or expired refresh token',
+        STATUS_CODES.UNAUTHORIZED,
+      );
+    }
+    throw error;
   }
 
   const currentUser = await User.findById(decoded.id);
@@ -206,7 +231,7 @@ const refresh = async (refreshToken: string) => {
   const accessToken = jwt.sign(
     { id: currentUser._id },
     process.env.JWT_SECRET,
-    { expiresIn: calcExpiration(process.env.JWT_EXPIRES_IN) },
+    { expiresIn: process.env.JWT_EXPIRES_IN },
   );
 
   return { accessToken };
@@ -223,7 +248,7 @@ const forgotPassword = async (email: string) => {
     { id: user._id },
     process.env.JWT_SECRET_PASSWORD_RESET,
     {
-      expiresIn: calcExpiration(process.env.JWT_PASSWORD_RESET_EXPIRES_IN),
+      expiresIn: process.env.JWT_PASSWORD_RESET_EXPIRES_IN,
     },
   );
 
@@ -239,16 +264,21 @@ const forgotPassword = async (email: string) => {
 };
 
 const resetPassword = async (resetToken: string, newPassword: string) => {
-  const decoded = jwt.verify(
-    resetToken,
-    process.env.JWT_SECRET_PASSWORD_RESET,
-  ) as JwtPayload;
+  let decoded: JwtPayload;
 
-  if (!decoded) {
-    throw new ErrorHandler(
-      'Invalid or expired reset token',
-      STATUS_CODES.UNAUTHORIZED,
-    );
+  try {
+    decoded = jwt.verify(
+      resetToken,
+      process.env.JWT_SECRET_PASSWORD_RESET,
+    ) as JwtPayload;
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new ErrorHandler(
+        'Invalid or expired reset token',
+        STATUS_CODES.UNAUTHORIZED,
+      );
+    }
+    throw error;
   }
 
   const user = await User.findById(decoded.id);

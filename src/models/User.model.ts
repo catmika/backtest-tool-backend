@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import bcrypt from 'bcrypt';
 import { Query } from 'mongoose';
+import bcrypt from 'bcrypt';
 
 export interface IUser {
   email: string;
