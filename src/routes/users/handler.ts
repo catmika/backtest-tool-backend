@@ -6,10 +6,15 @@ import {
   cookieOptionsRefreshToken,
 } from '../../util/cookieOptions';
 import { RESPONSE_MESSAGES } from '../../util/constants';
+import { IRequestWithUser } from './interfaces';
 
-const getUser = async (req: Request, res: Response, next: NextFunction) => {
+const getUser = async (
+  req: IRequestWithUser,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    res.send((req as any).user);
+    res.send(req.user);
   } catch (error) {
     next(error);
   }

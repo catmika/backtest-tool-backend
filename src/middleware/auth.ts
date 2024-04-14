@@ -1,11 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
-import { STATUS_CODES } from '../util/constants';
-import { ErrorHandler } from '../util/errorHandler';
 import User from '../models/User.model';
+import { ErrorHandler } from '../util/errorHandler';
+import { STATUS_CODES } from '../util/constants';
+import { IRequestWithUser } from '../routes/users/interfaces';
 
-const auth = async (req: Request, res: Response, next: NextFunction) => {
+const auth = async (
+  req: IRequestWithUser,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const accessToken = req.cookies.accessToken;
     if (!accessToken) {
@@ -41,7 +46,7 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
       );
     }
 
-    (req as any).user = { name: currentUser.name, email: currentUser.email };
+    req.user = { name: currentUser.name, email: currentUser.email };
     next();
   } catch (error) {
     next(error);
