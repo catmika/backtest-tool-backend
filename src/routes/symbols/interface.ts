@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { MARKET } from '../../models/Symbol.model';
 
 export interface IPagination extends Request {
   query: {
@@ -7,6 +8,7 @@ export interface IPagination extends Request {
     sortBy: string;
     sortOrder: string;
     search: string;
+    market: MARKET;
   };
 }
 
@@ -16,4 +18,5 @@ export interface IPaginationObject {
   sortBy: string;
   sortOrder: string;
   search: string;
+  market: MARKET;
 }
