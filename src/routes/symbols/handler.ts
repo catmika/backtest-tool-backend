@@ -15,6 +15,7 @@ const getSymbols = async (
       sortBy: req.query.sortBy,
       sortOrder: req.query.sortOrder,
       search: req.query.search,
+      market: req.query.market,
     };
 
     const data = await service.getSymbols(params);
