@@ -3,44 +3,6 @@ import Symbol from '../../models/Symbol.model';
 import { IPaginationObject } from './interface';
 import { mapSymbol } from '../../util/mapper';
 
-const TradingView = require('@mathieuc/tradingview');
-
-/**
- * This example tests fetching chart data of a number
- * of candles before or after a timestamp
- */
-
-const client = new TradingView.Client();
-
-const chart = new client.Session.Chart();
-chart.setMarket('OANDA:EURUSD', {
-  timeframe: 'D',
-  range: 1, // Can be positive to get before or negative to get after
-  to: 1675358389,
-});
-
-// This works with indicators
-
-// TradingView.getIndicator('STD;Supertrend').then(async (indic) => {
-//   console.log(`Loading '${indic.description}' study...`);
-//   const SUPERTREND = new chart.Study(indic);
-
-//   SUPERTREND.onUpdate(() => {
-//     console.log('Prices periods:', chart.periods);
-//     console.log('Study periods:', SUPERTREND.periods);
-//     client.end();
-//   });
-// });
-
-chart.onSymbolLoaded(() => {
-  console.log(chart.periods);
-});
-
-chart.onUpdate(() => {
-  console.log('OK', chart.periods);
-  client.end();
-});
-
 const getSymbols = async (params: IPaginationObject) => {
   const pipelines: PipelineStage[] = [];
 
