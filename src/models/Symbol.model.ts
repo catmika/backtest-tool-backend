@@ -3,16 +3,16 @@ import mongoose, { Document, Schema } from 'mongoose';
 export enum MARKET {
   INDICES = 'indices',
   STOCKS = 'stocks',
-  CRYPTO = 'crypto',
-  FOREX = 'forex',
-  BONDS = 'bonds',
+  CRYPTO = 'cryptocurrencies',
+  FOREX = 'forex_pairs',
+  ETF = 'etf',
 }
 
 export interface ISymbol {
   shortName: string;
   fullName: string;
   market: MARKET;
-  exchange: string;
+  exchanges: string[];
 }
 
 export interface ISymbolDocument extends Document, ISymbol {}
@@ -31,10 +31,7 @@ const symbolSchema = new Schema<ISymbol>(
       type: String,
       required: true,
     },
-    exchange: {
-      type: String,
-      required: true,
-    },
+    exchanges: [String],
   },
   {
     timestamps: true,
