@@ -5,13 +5,13 @@ export const mapSymbol = (i: ISymbolDocument) => {
     return null;
   }
 
-  const { _id, shortName, fullName, market, exchange } = i;
+  const { _id, shortName, fullName, market, exchanges } = i;
 
   return {
     id: _id,
     shortName,
     fullName,
     market,
-    exchange,
+    exchanges: exchanges ?? [],
   };
 };
