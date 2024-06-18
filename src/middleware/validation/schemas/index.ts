@@ -1,5 +1,9 @@
-import user from './user';
+import users from './users';
+import symbols from './symbols';
+import instruments from './instruments';
 
 export default {
-  user,
+  users,
+  symbols,
+  instruments,
 };
