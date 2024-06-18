@@ -8,10 +8,17 @@ import schemas from '../../middleware/validation/schemas';
 const router = Router();
 
 router.get(
-  '/',
+  '/earliest-timestamp',
   auth,
-  validation(schemas.symbols.getSymbols),
-  handler.getSymbols,
+  validation(schemas.instruments.getEarliestTimestamp),
+  handler.getEarliestTimestamp,
+);
+
+router.get(
+  '/consecutive-candles',
+  auth,
+  validation(schemas.instruments.testConsecutiveCandles),
+  handler.testConsecutiveCandles,
 );
 
 export default router;
