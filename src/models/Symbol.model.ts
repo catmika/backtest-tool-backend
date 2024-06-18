@@ -6,6 +6,8 @@ export enum MARKET {
   CRYPTO = 'cryptocurrencies',
   FOREX = 'forex_pairs',
   ETF = 'etf',
+  FUNDS = 'funds',
+  BONDS = 'bonds',
 }
 
 export interface ISymbol {
