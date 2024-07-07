@@ -61,7 +61,9 @@ const testConsecutiveCandles = async ({
   max,
 }) => {
   const response = await fetch(
-    `${apiBaseUrl}/time_series?symbol=${symbol}&interval=${timeframe}&exchange=${exchange}&start_date=${startDate}&end_date=${endDate}&timezone=${timezone}&apikey=${apiKey}`,
+    `${apiBaseUrl}/time_series?symbol=${symbol}&interval=${timeframe}${
+      exchange ? `&exchange=${exchange}` : ''
+    }&start_date=${startDate}&end_date=${endDate}&timezone=${timezone}&apikey=${apiKey}`,
   );
 
   if (!response.ok) {
@@ -74,7 +76,7 @@ const testConsecutiveCandles = async ({
 
   if (chartData?.status === 'error') {
     console.error(chartData);
-    throw new ErrorHandler('Data provider error', 500);
+    throw new ErrorHandler(chartData?.message, chartData?.code);
   }
 
   const candles = applyTimeFilters(chartData.values, timeFilters.split(','));
