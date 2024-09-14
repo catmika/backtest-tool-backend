@@ -3,31 +3,15 @@ import { NextFunction, Request, Response } from 'express';
 import service from './service';
 import { ITestConsecutiveCandlesRequest } from './interface';
 
-export const extractExchangeAndSymbol = (symbol: string) => {
-  const exchangeAndSymbol = symbol.split(':');
-
-  return {
-    symbol:
-      exchangeAndSymbol.length === 2
-        ? exchangeAndSymbol[1]
-        : exchangeAndSymbol[0],
-    exchange: exchangeAndSymbol.length === 2 ? exchangeAndSymbol[0] : null,
-  };
-};
-
 const getEarliestTimestamp = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const { symbol, exchange } = extractExchangeAndSymbol(
-      req.query.symbol as string,
-    );
-
     const params = {
-      symbol,
-      exchange,
+      symbol: req.query.symbol,
+      exchange: req.query.exchange,
       timeframe: req.query.timeframe,
     };
 
@@ -45,13 +29,9 @@ const testConsecutiveCandles = async (
   next: NextFunction,
 ) => {
   try {
-    const { symbol, exchange } = extractExchangeAndSymbol(
-      req.query.symbol as string,
-    );
-
     const params = {
-      symbol,
-      exchange,
+      symbol: req.query.symbol,
+      exchange: req.query.exchange,
       timeframe: req.query.timeframe,
       startDate: req.query.startDate,
       endDate: req.query.endDate,
@@ -69,7 +49,32 @@ const testConsecutiveCandles = async (
   }
 };
 
+const testPreviousKeyLevels = async (
+  req: ITestConsecutiveCandlesRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const params = {
+      symbol: req.query.symbol,
+      exchange: req.query.exchange,
+      timeframe: req.query.timeframe,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      timezone: req.query.timezone,
+      timeFilters: req.query.timeFilters,
+    };
+
+    const data = await service.testPreviousKeyLevels(params);
+
+    res.send(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getEarliestTimestamp,
   testConsecutiveCandles,
+  testPreviousKeyLevels,
 };

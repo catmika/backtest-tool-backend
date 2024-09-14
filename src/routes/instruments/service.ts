@@ -31,6 +31,37 @@ const applyTimeFilters = (candles: ICandle[], timeFilters: string[]) => {
   return candles;
 };
 
+const callTimeSeriesApi = async ({
+  symbol,
+  timeframe,
+  exchange,
+  startDate,
+  endDate,
+  timezone,
+  timeFilters,
+}) => {
+  const response = await fetch(
+    `${apiBaseUrl}/time_series?symbol=${symbol}&interval=${timeframe}&exchange=${exchange}&start_date=${startDate}&end_date=${endDate}&timezone=${timezone}&apikey=${apiKey}`,
+  );
+
+  if (!response.ok) {
+    console.error(response);
+    throw new ErrorHandler('Data provider error', 500);
+    //or response.status?
+  }
+
+  const chartData = await response.json();
+
+  if (chartData?.status === 'error') {
+    console.error(chartData);
+    throw new ErrorHandler('Data provider error', 500);
+  }
+
+  const candles = applyTimeFilters(chartData.values, timeFilters.split(','));
+
+  return candles;
+};
+
 const getEarliestTimestamp = async ({ symbol, exchange, timeframe }) => {
   const response = await fetch(
     `${apiBaseUrl}/earliest_timestamp?symbol=${symbol}${
@@ -60,24 +91,15 @@ const testConsecutiveCandles = async ({
   min,
   max,
 }) => {
-  const response = await fetch(
-    `${apiBaseUrl}/time_series?symbol=${symbol}&interval=${timeframe}&exchange=${exchange}&start_date=${startDate}&end_date=${endDate}&timezone=${timezone}&apikey=${apiKey}`,
-  );
-
-  if (!response.ok) {
-    console.error(response);
-    throw new ErrorHandler('Data provider error', 500);
-    //or response.status?
-  }
-
-  const chartData = await response.json();
-
-  if (chartData?.status === 'error') {
-    console.error(chartData);
-    throw new ErrorHandler('Data provider error', 500);
-  }
-
-  const candles = applyTimeFilters(chartData.values, timeFilters.split(','));
+  const candles = await callTimeSeriesApi({
+    symbol,
+    exchange,
+    timeframe,
+    startDate,
+    endDate,
+    timezone,
+    timeFilters,
+  });
 
   const bullishSeries = new Array(max - min + 1).fill(0);
   const bearishSeries = new Array(max - min + 1).fill(0);
@@ -132,4 +154,28 @@ const testConsecutiveCandles = async ({
   return statistics;
 };
 
-export default { getEarliestTimestamp, testConsecutiveCandles };
+const testPreviousKeyLevels = async ({
+  symbol,
+  exchange,
+  timeframe,
+  startDate,
+  endDate,
+  timezone,
+  timeFilters,
+}) => {
+  const candles = await callTimeSeriesApi({
+    symbol,
+    exchange,
+    timeframe,
+    startDate,
+    endDate,
+    timezone,
+    timeFilters,
+  });
+};
+
+export default {
+  getEarliestTimestamp,
+  testConsecutiveCandles,
+  testPreviousKeyLevels,
+};
