@@ -17,6 +17,7 @@ export type TTimezone = (typeof TIMEZONES)[keyof typeof TIMEZONES];
 export interface IInstrumentRequest extends Request {
   query: {
     symbol: string;
+    exchange?: string;
     timeframe: TTimeframe;
     startDate: string;
     endDate: string;
